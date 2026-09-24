@@ -1,27 +1,27 @@
 use image::{DynamicImage, GenericImage};
 
-use crate::pokemon::Pokemon;
+use crate::digimon::Digimon;
 
-/// Combines several pokemon sprites into one by stitching them horizontally.
-pub fn combine(pokemons: &[Pokemon]) -> DynamicImage {
+/// Combines several digimon sprites into one by stitching them horizontally.
+pub fn combine(digimons: &[Digimon]) -> DynamicImage {
     let mut width: u32 = 0;
     let mut height: u32 = 0;
 
-    for pokemon in pokemons {
-        width += pokemon.sprite.width() + 1;
-        if pokemon.sprite.height() > height {
-            height = pokemon.sprite.height();
+    for digimon in digimons {
+        width += digimon.sprite.width() + 1;
+        if digimon.sprite.height() > height {
+            height = digimon.sprite.height();
         }
     }
 
     let mut combined = DynamicImage::new_rgba8(width - 1, height);
     let mut shift = 0;
 
-    for pokemon in pokemons {
+    for digimon in digimons {
         combined
-            .copy_from(&pokemon.sprite, shift, height - pokemon.sprite.height())
+            .copy_from(&digimon.sprite, shift, height - digimon.sprite.height())
             .unwrap();
-        shift += pokemon.sprite.width() + 1;
+        shift += digimon.sprite.width() + 1;
     }
 
     combined

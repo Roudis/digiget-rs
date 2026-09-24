@@ -1,32 +1,30 @@
-#![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::restriction)]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
 
 use std::io::Cursor;
 
-use crate::pokemon::Region;
 use bimap::BiHashMap;
 
 /// A parsed representation of `names.csv`.
 ///
-/// Used to derive filenames from Pokedex ID's, and to
-/// format image filenames back into proper pokemon names.
+/// Used to derive filenames from numeric IDs, and to
+/// format image filenames back into proper digimon names.
 pub struct List {
-    /// The Pokedex IDs and their corresponding filenames.
+    /// The IDs and their corresponding filenames.
     ids: BiHashMap<usize, String>,
 
-    /// All the proper, formatted names in order of Pokedex ID.
+    /// All the proper, formatted names in order of ID.
     names: Vec<String>,
 }
 
 impl List {
     /// Reads a new [`List`] from `data/names.csv`.
     pub fn read() -> Self {
-        const FILE: &'static str = include_str!("../data/names.csv");
+        const FILE: &str = include_str!("../data/names.csv");
+        const CAPACITY: usize = 1000;
 
         let mut reader = csv::ReaderBuilder::new()
             .has_headers(false)
             .from_reader(Cursor::new(FILE));
-
-        const CAPACITY: usize = 1000;
 
         let mut ids = BiHashMap::with_capacity(CAPACITY);
         let mut names = Vec::with_capacity(CAPACITY);
@@ -46,47 +44,33 @@ impl List {
     /// # Examples
     ///
     /// ```
-    /// use pokeget::list::List;
+    /// use digiget::list::List;
     /// let list = List::read();
-    /// assert_eq!(list.format_name("mr-mime"), "Mr. Mime")
+    /// assert_eq!(list.format_name("agumon"), "Agumon")
     /// ```
     pub fn format_name(&self, filename: &str) -> String {
-        let Some(id) = self.ids.get_by_right(filename) else {
-            return filename.to_owned();
-        };
-
-        let Some(name) = self.names.get(*id) else {
-            return filename.to_owned();
-        };
-
-        name.clone()
+        self.ids
+            .get_by_right(filename)
+            .and_then(|id| self.names.get(*id))
+            .map_or_else(|| filename.to_owned(), Clone::clone)
     }
 
-    /// Gets a pokemon filename by a Dex ID.
+    /// Gets a digimon filename by its ID.
     pub fn get_by_id(&self, id: usize) -> Option<&String> {
         self.ids.get_by_left(&id)
     }
 
-    /// Gets a random pokemon & returns it's filename.
+    /// Gets a random digimon & returns its filename.
     pub fn random(&self) -> String {
         let idx = rand::random_range(0..self.ids.len());
         self.ids.get_by_left(&idx).unwrap().clone()
     }
 
-    /// Gets a random pokemon by region
-    pub fn get_by_region(&self, region: Region) -> String {
-        let region = match region {
-            Region::Kanto => 0..=151,
-            Region::Johto => 152..=251,
-            Region::Hoenn => 252..=386,
-            Region::Sinnoh => 387..=493,
-            Region::Unova => 494..=649,
-            Region::Kalos => 650..=721,
-            Region::Alola => 722..=809,
-            Region::Galar => 810..=905,
-        };
-
-        let idx = rand::random_range(region);
-        self.ids.get_by_left(&idx).unwrap().clone()
+    /// Iterates over `(number, display name, filename)` in order.
+    pub fn entries(&self) -> impl Iterator<Item = (usize, &str, &str)> {
+        self.names.iter().enumerate().map(|(i, name)| {
+            let file = self.ids.get_by_left(&i).unwrap();
+            (i + 1, name.as_str(), file.as_str())
+        })
     }
 }

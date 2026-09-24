@@ -1,10 +1,10 @@
 use rust_embed::RustEmbed;
 
 pub mod cli;
+pub mod digimon;
 pub mod list;
-pub mod pokemon;
 pub mod sprites;
 
 #[derive(RustEmbed)]
-#[folder = "data/pokesprite/pokemon-gen8"]
+#[folder = "data/sprites"]
 pub struct Data;
