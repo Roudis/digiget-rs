@@ -10,6 +10,14 @@ pub struct Args {
     #[arg(long, default_value_t = false)]
     pub hide_name: bool,
 
+    /// Scale the sprite by this whole-number factor instead of fitting it to the terminal
+    #[arg(long, value_parser = clap::value_parser!(u32).range(1..=16), conflicts_with = "no_fit")]
+    pub scale: Option<u32>,
+
+    /// Keep the sprite at its native size instead of fitting it to the terminal
+    #[arg(long, default_value_t = false)]
+    pub no_fit: bool,
+
     /// List every available digimon with its number, then exit
     #[arg(short, long, default_value_t = false)]
     pub list: bool,

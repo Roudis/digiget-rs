@@ -14,6 +14,21 @@ digiget --list                   # every available digimon and its number
 
 The name goes to stderr and the sprite to stdout, same as pokeget.
 
+## Size
+
+By default the sprite is fitted to the terminal window. If the window has room,
+the sprite is enlarged by the largest whole-number factor that fits, so the pixel
+art stays crisp. If the window is too small, the sprite is shrunk to fit. Two
+lines stay free for the name and the prompt.
+
+```
+digiget agumon --scale 2   # fixed 2x, ignoring the terminal size
+digiget agumon --no-fit    # native size (64x64 pixels at most)
+```
+
+When stdout is piped, digiget reads the size from stderr/stdin, and the
+`COLUMNS` / `LINES` environment variables override the detected values.
+
 ## Install
 
 ```
