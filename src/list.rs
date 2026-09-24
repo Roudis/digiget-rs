@@ -14,6 +14,19 @@ pub struct List {
 
     /// All the proper, formatted names in order of ID.
     names: Vec<String>,
+
+    /// Where each sprite can be downloaded from, in order of ID.
+    sources: Vec<Source>,
+}
+
+/// Where a digimon's sprite can be downloaded from.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Source {
+    /// The URL of the upscaled sprite image.
+    pub url: String,
+
+    /// How many times the image at [`Source::url`] is larger than the native sprite.
+    pub scale: u32,
 }
 
 impl List {
@@ -28,15 +41,21 @@ impl List {
 
         let mut ids = BiHashMap::with_capacity(CAPACITY);
         let mut names = Vec::with_capacity(CAPACITY);
+        let mut sources = Vec::with_capacity(CAPACITY);
 
         for (i, entry) in reader.deserialize().enumerate() {
-            let record: (String, String) = entry.unwrap();
+            let (name, file, url, scale): (String, String, String, u32) = entry.unwrap();
 
-            ids.insert(i, record.1);
-            names.push(record.0);
+            ids.insert(i, file);
+            names.push(name);
+            sources.push(Source { url, scale });
         }
 
-        Self { ids, names }
+        Self {
+            ids,
+            names,
+            sources,
+        }
     }
 
     /// Takes a filename and looks up the proper display name.
@@ -58,6 +77,28 @@ impl List {
     /// Gets a digimon filename by its ID.
     pub fn get_by_id(&self, id: usize) -> Option<&String> {
         self.ids.get_by_left(&id)
+    }
+
+    /// Returns whether `filename` is a known digimon.
+    pub fn contains(&self, filename: &str) -> bool {
+        self.ids.contains_right(filename)
+    }
+
+    /// Looks up where a digimon's sprite can be downloaded from.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use digiget::list::List;
+    /// let list = List::read();
+    /// let source = list.source("agumon").unwrap();
+    /// assert!(source.url.starts_with("https://"));
+    /// assert!(source.scale > 0);
+    /// ```
+    pub fn source(&self, filename: &str) -> Option<&Source> {
+        self.ids
+            .get_by_right(filename)
+            .and_then(|id| self.sources.get(*id))
     }
 
     /// Gets a random digimon & returns its filename.

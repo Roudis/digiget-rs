@@ -21,4 +21,8 @@ pub struct Args {
     /// List every available digimon with its number, then exit
     #[arg(short, long, default_value_t = false)]
     pub list: bool,
+
+    /// Download every sprite that isn't cached yet, so digiget works offline, then exit
+    #[arg(long, default_value_t = false)]
+    pub download_all: bool,
 }

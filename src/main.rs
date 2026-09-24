@@ -3,6 +3,7 @@
 use clap::Parser;
 use digiget::cli::Args;
 use digiget::digimon::Digimon;
+use digiget::fetch;
 use digiget::list::List;
 use digiget::sprites;
 use std::process::exit;
@@ -16,6 +17,17 @@ fn main() {
             println!("{id:>4}  {name:<40} {file}");
         }
         return;
+    }
+
+    if args.download_all {
+        match fetch::download_all(&list) {
+            Ok(summary) if summary.failed > 0 && summary.downloaded == 0 => exit(1),
+            Ok(_) => return,
+            Err(err) => {
+                eprintln!("{err}");
+                exit(1)
+            }
+        }
     }
 
     if args.digimon.is_empty() {

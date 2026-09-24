@@ -3,7 +3,7 @@ use std::process::exit;
 use image::DynamicImage;
 use showie::Trim;
 
-use crate::{list::List, Data};
+use crate::{fetch, list::List};
 
 /// Enum used to assist parsing user input.
 ///
@@ -64,7 +64,7 @@ pub fn filename(name: &str) -> String {
 
 /// The struct used to represent a Digimon's data.
 pub struct Digimon {
-    /// The path of the sprite inside the embedded data, e.g. `agumon.png`.
+    /// The sprite's filename in the cache, e.g. `agumon.png`.
     pub path: String,
 
     /// The formatted name of the digimon, usually gotten from a [List].
@@ -76,24 +76,41 @@ pub struct Digimon {
 
 impl Digimon {
     /// Creates a new digimon.
-    /// This also fetches the sprite & formats the name.
+    /// This also fetches the sprite (from the cache, or by downloading it) & formats the name.
+    ///
+    /// If a random digimon was asked for and its sprite can't be downloaded,
+    /// a random digimon that is already cached is used instead.
     pub fn new(arg: String, list: &List) -> Self {
-        let name = Selection::parse(arg).eval(list);
-        let path = format!("{name}.png");
+        let selection = Selection::parse(arg);
+        let random = selection == Selection::Random;
+        let mut name = selection.eval(list);
 
-        let bytes = Data::get(&path)
-            .unwrap_or_else(|| {
-                eprintln!("digimon not found, try `digiget --list`");
-                exit(1)
-            })
-            .data
-            .into_owned();
+        if !list.contains(&name) {
+            eprintln!("digimon not found, try `digiget --list`");
+            exit(1)
+        }
 
-        let sprite = image::load_from_memory(&bytes).unwrap().trim();
+        let sprite = match fetch::load(list, &name) {
+            Ok(sprite) => sprite,
+            Err(err) => match random.then(|| fetch::random_cached(list)).flatten() {
+                Some((cached, sprite)) => {
+                    name = cached;
+                    sprite
+                }
+                None => {
+                    eprintln!(
+                        "could not download {}: {err}. Check your internet connection or run `digiget --download-all` while online.",
+                        list.format_name(&name)
+                    );
+                    exit(1)
+                }
+            },
+        };
+
         Self {
-            path,
+            path: format!("{name}.png"),
             name: list.format_name(&name),
-            sprite,
+            sprite: sprite.trim(),
         }
     }
 }

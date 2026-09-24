@@ -1,0 +1,16 @@
+digiget
+Source code licensed under the MIT License (see LICENSE).
+
+digiget is an unofficial, non-commercial fan project, derived from pokeget-rs
+by talwat (https://github.com/talwat/pokeget-rs).
+
+It is not affiliated with, endorsed, sponsored or approved by Bandai,
+Bandai Namco, Toei Animation or Akiyoshi Hongo. Digimon, the Digimon names,
+and all related characters and sprites are trademarks and (c) of their
+respective owners. The MIT license covers only this project's source code,
+not the Digimon names or artwork.
+
+No Digimon artwork is distributed with this project. Sprites are downloaded
+at runtime from Wikimon (https://wikimon.net).
+
+Rights holders who want something changed or removed: please open an issue.

@@ -14,6 +14,8 @@ digiget --list                   # every available digimon and its number
 
 The name goes to stderr and the sprite to stdout, same as pokeget.
 
+> **Disclaimer:** digiget is an unofficial fan project. See [Disclaimer](#disclaimer).
+
 ## Size
 
 By default the sprite is fitted to the terminal window. If the window has room,
@@ -37,10 +39,46 @@ cargo install --path .
 
 ## Sprites
 
-There are 688 sprites, all taken from the full-color Vital Bracelet pixel art in
-[Wikimon](https://wikimon.net)'s `Category:V-Pet_Sprites`. They're embedded in
-the binary. `scripts/fetch_sprites.sh` downloads them again, shrinks them to
-their native size (Wikimon stores them scaled up 3× or 6×), and rebuilds
-`data/names.csv`.
+No Digimon artwork is included in this repository or in the binaries. The
+sprites are the full-color Vital Bracelet pixel art hosted on
+[Wikimon](https://wikimon.net) (`Category:V-Pet_Sprites`). digiget downloads each
+one from wikimon.net the first time it's needed and caches it in
+`$XDG_CACHE_HOME/digiget/sprites` (by default `~/.cache/digiget/sprites`). Set
+`DIGIGET_CACHE_DIR` to use a different directory.
 
-Digimon and their sprites are © Bandai / Toei Animation.
+```
+digiget --download-all   # fetch every sprite now, e.g. before going offline
+```
+
+Offline, `digiget random` picks from the sprites already in the cache. A named
+digimon that isn't cached yet needs an internet connection the first time.
+
+`data/names.csv` is the index: display name, slug, Wikimon URL and upscale
+factor for each of the 688 digimon, in numbering order. `scripts/update_index.sh`
+(needs `curl` and `jq`) rebuilds it from the Wikimon API without downloading any
+images. Existing rows keep their position so numbers don't change; new sprites
+are appended at the end.
+
+## Credits
+
+- [pokeget-rs](https://github.com/talwat/pokeget-rs) by talwat, the original
+  project digiget is cloned from.
+- [Wikimon](https://wikimon.net), which hosts the sprites.
+
+## Non-commercial
+
+digiget is free and non-commercial. It will never be sold, and it doesn't accept
+donations or run ads.
+
+## Disclaimer
+
+digiget is an unofficial fan project. It is not affiliated with, endorsed,
+sponsored or approved by Bandai, Bandai Namco, Toei Animation or Akiyoshi Hongo.
+Digimon, the Digimon names, and all related characters and sprites are
+trademarks and © of their respective owners.
+
+The MIT license covers only this project's source code. It does not cover the
+Digimon names or artwork.
+
+If you are a rights holder and want something changed or removed, please open
+an issue.
