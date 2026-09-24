@@ -30,6 +30,14 @@ fn main() {
         .collect();
 
     let combined = sprites::combine(&digimons);
+    let combined = match (args.scale, args.no_fit) {
+        (Some(factor), _) => sprites::scale(&combined, factor),
+        (None, true) => combined,
+        (None, false) => match sprites::terminal_size() {
+            Some((cols, rows)) => sprites::fit(&combined, cols, rows),
+            None => combined,
+        },
+    };
     if !args.hide_name {
         let names: Vec<&str> = digimons.iter().map(|x| x.name.as_ref()).collect();
         eprintln!("{}", names.join(", "));
